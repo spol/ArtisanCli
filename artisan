@@ -1,0 +1,68 @@
+#!/usr/bin/env php
+<?php
+
+$cwd = getcwd();
+
+// $path = new SplFileInfo($cwd);
+
+class ParentDirectoryIterator implements Iterator
+{
+	private $path;
+	private $cursor;
+
+	public function __construct($path)
+	{
+		$this->path = explode(DIRECTORY_SEPARATOR, $path);
+		$this->rewind();
+	}
+
+	public function current()
+	{
+		return $this->build_path();
+	}
+	public function key()
+	{
+		return (count($this->path) - 1) - $this->cursor;
+	}
+	public function next()
+	{
+		$this->cursor--;
+	}
+
+	public function rewind()
+	{
+		$this->cursor = count($this->path) - 1;
+	}
+
+	public function valid()
+	{
+		return isset($this->path[$this->cursor]);
+	}
+
+	private function build_path()
+	{
+		return implode(DIRECTORY_SEPARATOR, array_slice($this->path, 0, $this->cursor+1)) . DIRECTORY_SEPARATOR;
+	}
+}
+
+$cwd = new ParentDirectoryIterator(getcwd());
+
+$artisan_path = null;
+
+foreach ($cwd as $path)
+{
+	if (file_exists($path . 'artisan'))
+	{
+		$artisan_path = $path;
+		break;
+	}
+}
+
+if ($artisan_path === null)
+{
+	die("This doesn't appear to be a Laravel project.\n");
+}
+else
+{
+	require($path . 'artisan');
+}
