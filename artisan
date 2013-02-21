@@ -64,5 +64,8 @@ if ($artisan_path === null)
 }
 else
 {
-	require($path . 'artisan');
+	// Working around the shebang at the beginning of the file.
+	$artisan = substr(file_get_contents($artisan_path . 'artisan'), 24);
+	$artisan = str_replace("__DIR__", "'$artisan_path'", $artisan);
+	eval($artisan);
 }
